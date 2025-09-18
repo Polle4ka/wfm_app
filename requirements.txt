@@ -1,0 +1,7 @@
+streamlit
+pandas
+numpy
+altair
+python-dateutil
+statsmodels
+matplotlib
