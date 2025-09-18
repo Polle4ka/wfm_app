@@ -15,6 +15,17 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+# ===== Перевод дней недели =====
+weekday_map = {
+    "Monday": "Понедельник",
+    "Tuesday": "Вторник",
+    "Wednesday": "Среда",
+    "Thursday": "Четверг",
+    "Friday": "Пятница",
+    "Saturday": "Суббота",
+    "Sunday": "Воскресенье"
+}
+
 # ===== Заголовок =====
 st.markdown("<h1 style='margin-bottom:0'>📞 WFM-модуль</h1><p style='color:#666;margin-top:4px'>Прогноз нагрузки и расчёт штата для контакт-центра</p>", unsafe_allow_html=True)
 
@@ -94,13 +105,13 @@ else:
     df = df.set_index("Datetime").sort_index()
     df = df[df["Час"].isin(WORK_HOURS)]
     if "День недели" not in df.columns:
-        df["День недели"] = df.index.day_name(locale="Russian")
+        df["День недели"] = df.index.day_name().map(weekday_map)
 
     # ===== История по дням =====
     with st.expander("📅 История по дням"):
         daily = df.groupby(df["Дата"].dt.date).agg({"Звонки": "sum", "Среднее время (мин)": "mean"}).reset_index()
         daily["Месяц"] = pd.to_datetime(daily["Дата"]).dt.strftime("%B %Y")
-        daily["День недели"] = pd.to_datetime(daily["Дата"]).dt.day_name(locale="Russian")
+        daily["День недели"] = pd.to_datetime(daily["Дата"]).dt.day_name().map(weekday_map)
         months = daily["Месяц"].unique().tolist()
         sel_month = st.selectbox("Выберите месяц", months)
         daily_month = daily[daily["Месяц"] == sel_month]
@@ -152,7 +163,7 @@ else:
     out = pd.DataFrame({"Datetime": future_idx, "База": base_vals})
     out["Date"] = out["Datetime"].dt.strftime("%d-%m-%Y")
     out["Hour"] = out["Datetime"].dt.hour
-    out["День недели"] = out["Datetime"].dt.day_name(locale="Russian")
+    out["День недели"] = out["Datetime"].dt.day_name().map(weekday_map)
     out["Открытие?"] = out["Datetime"].dt.date.isin(dates_where_month_ahead_is_weekend(out["Datetime"]))
 
     out["Прогноз звонков"] = out["База"]
